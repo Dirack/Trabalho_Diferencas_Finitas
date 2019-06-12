@@ -1,0 +1,69 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+#
+# Madagascar-diffd2d SEM BORDA  (Script do Madagascar)
+#
+# IMPORTANTE: Foi retirada a condição de borda absorvente do programa 'sfdiffd2d' para ilustrar os efeitos de 
+# borda na metodologia de diferenças finitas.
+#
+# Objetivo: Realizar a modelagem com DF de um modelo de uma fonte pontual em um meio
+# de velocidade constante, de modo a simular o campo gerado por um ponto difrator.
+#
+# Site: http://www.dirackslounge.online
+# 
+# Versão 1.0
+#
+# Programador: Rodolfo A. C. Neves 10/05/2019
+#
+# email: rodolfo_profissional@hotmail.com
+#
+# Funcionamento: digite 'scons' no terminal e aperte enter.
+#
+# Licensa:
+#  		Copyright (C) 2018 grupo de programação aplicada à geofísica (GPGEOF)
+#  		da Universidade Federal do Pará (UFPA); Belém, Pará, Brasil. 
+#
+#  		Esse programa é um software livre; você pode redistribuir e/ou modificar
+#  		sobre os termos da licensa pública geral (LPG) publicada pela Free 
+#  		Software Foundation; na versão 2 da licensa, ou (a seu critério) qualquer
+#  		versão posterior.
+#
+#  		Este programa é distribuído na esperança que será útil, mas SEM NENHUMA
+#  		GARANTIA; nem mesmo a garantia implícita de MERCANTILIDADE ou SERVENTIA
+#  		A UM PROPÒSITO DETERMINADO. veja a LPG licensa pública geral para mais
+#  		detalhes.
+#
+#  		Você deve ter recebido uma cópia da LPG licensa pública geral junto com
+#  		este programa; se não, escreva para a Free Software Foundation, Inc., 
+#  		51 Franklin Street, Quinquagésimo andar, Boston, MA  02110-1301, USA.
+
+
+# Importe a Biblioteca do madagascar 
+from rsf.proj import *
+
+## Gerar o modelo de velocidades
+Flow('vel',None,
+        '''
+        math output=2.0 n1=200 n2=200 d1=0.005 d2=0.005
+        label1=x1 unit1=km label2=x2 unit2=km
+        ''')
+
+# Posição do receptor no grid
+nr=25
+
+receptor='receptor'
+
+## Modelagem DF com SEM borda absorvente
+Flow(['wav',receptor],'vel',
+	'''
+	teste2 nb=30 nt=1000 dt=0.001 rec=${TARGETS[1]}
+	''')
+Plot('wav','grey gainpanel=all title="Efeito SEM BORDA" scalebar=y color=j scalebar=y',view=1)
+Result(receptor,
+	'''
+	wiggle title="Modelagem DF" transp=y poly=y yreverse=y
+	''')
+
+End()
+
+
