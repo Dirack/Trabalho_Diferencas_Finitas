@@ -1,42 +1,21 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
-# Madagascar-diffd2d SEM BORDA  (Script do Madagascar)
+# Madagascar (Script do Madagascar)
 #
-# IMPORTANTE: Foi retirada a condição de borda absorvente do programa 'sfdiffd2d' para ilustrar os efeitos de 
-# borda na metodologia de diferenças finitas.
+# IMPORTANTE: Foi retirada a condição de borda absorvente do programa 'sfTestfd2d'
+# para ilustrar os efeitos de borda na metodologia de diferenças finitas.
 #
 # Objetivo: Realizar a modelagem com DF de um modelo de uma fonte pontual em um meio
-# de velocidade constante, de modo a simular o campo gerado por um ponto difrator.
+# de velocidade constante, de modo a exemplificar os efeitos da borda absorvente.
 #
-# Site: http://www.dirackslounge.online
+# Site: https://dirack.github.io
 # 
 # Versão 1.0
 #
 # Programador: Rodolfo A. C. Neves 10/05/2019
 #
 # email: rodolfo_profissional@hotmail.com
-#
-# Funcionamento: digite 'scons' no terminal e aperte enter.
-#
-# Licensa:
-#  		Copyright (C) 2018 grupo de programação aplicada à geofísica (GPGEOF)
-#  		da Universidade Federal do Pará (UFPA); Belém, Pará, Brasil. 
-#
-#  		Esse programa é um software livre; você pode redistribuir e/ou modificar
-#  		sobre os termos da licensa pública geral (LPG) publicada pela Free 
-#  		Software Foundation; na versão 2 da licensa, ou (a seu critério) qualquer
-#  		versão posterior.
-#
-#  		Este programa é distribuído na esperança que será útil, mas SEM NENHUMA
-#  		GARANTIA; nem mesmo a garantia implícita de MERCANTILIDADE ou SERVENTIA
-#  		A UM PROPÒSITO DETERMINADO. veja a LPG licensa pública geral para mais
-#  		detalhes.
-#
-#  		Você deve ter recebido uma cópia da LPG licensa pública geral junto com
-#  		este programa; se não, escreva para a Free Software Foundation, Inc., 
-#  		51 Franklin Street, Quinquagésimo andar, Boston, MA  02110-1301, USA.
-
 
 # Importe a Biblioteca do madagascar 
 from rsf.proj import *
@@ -51,17 +30,31 @@ Flow('vel',None,
 # Posição do receptor no grid
 nr=25
 
-receptor='receptor'
+receptor_com_borda='receiver_with_border'
+receptor_sem_borda='receiver_no_border'
 
-## Modelagem DF com SEM borda absorvente
-Flow(['wav',receptor],'vel',
+## Modelagem DF COM borda absorvente
+Flow(['wav_com_borda',receptor_com_borda],'vel',
 	'''
-	teste2 nb=30 nt=1000 dt=0.001 rec=${TARGETS[1]}
+	./semborda.x border=y nb=30 nt=1000 dt=0.001 rec=${TARGETS[1]}
 	''')
-Plot('wav','grey gainpanel=all title="Efeito SEM BORDA" scalebar=y color=j scalebar=y',view=1)
-Result(receptor,
+Plot('wav_com_borda','grey gainpanel=all title="Efeito COM borda" scalebar=y color=j scalebar=y',view=1)
+
+Result(receptor_com_borda,
 	'''
-	wiggle title="Modelagem DF" transp=y poly=y yreverse=y
+	wiggle title="Modelagem DF COM borda" transp=y poly=y yreverse=y
+	''')
+
+## Modelagem DF SEM borda absorvente
+Flow(['wav_sem_borda',receptor_sem_borda],'vel',
+	'''
+	./semborda.x border=n nb=30 nt=1000 dt=0.001 rec=${TARGETS[1]}
+	''')
+Plot('wav_sem_borda','grey gainpanel=all title="Efeito SEM borda" scalebar=y color=j scalebar=y',view=1)
+
+Result(receptor_sem_borda,
+	'''
+	wiggle title="Modelagem DF SEM borda" transp=y poly=y yreverse=y
 	''')
 
 End()

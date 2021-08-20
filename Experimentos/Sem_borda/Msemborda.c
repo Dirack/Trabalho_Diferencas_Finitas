@@ -1,49 +1,23 @@
-/* Versão 1.0 - Diferenças Finitas sem condição de borda
+/* Version 1.0 - Finite Diferences without borders condition
 
-IMPORTANTE: 'sfdiffd2d' é uma modificação do programa 'sfTestfd2d' do pacote MADAGASCAR
+IMPORTANT: 'semborda.x' is a modified version of the 'sfTestfd2d' program from MADAGASCAR package
 
-Objetivo: Realizar a modelagem do campo acústico através de Diferenças Finitas (DF) para uma fonte pontual em um meio de velocidade constante. A Entrada é o modelo de velocidades, as saídas são os snapshots do campo modelado e o registro de um receptor.
+Purpose: FD modeling for a point source in a constant velocity model. The input is the velocity model, and the output are modeled filed snapshots and receiver records.
 
-MODIFICAÇÃO: O programa tem como saída um shot gather ao invés do registro de apenas um receptor.
+CHANGES: The program outpur is a shot gather instead of a receiver record.
 
-Exemplo de uso:
+Usage:
 
-	<in.rsf sfsemBorda rec=receptor.rsf nb=30 nt=1000 dt=0.001 > out.rsf
+	<in.rsf semborda.x rec=receptor.rsf nb=30 nt=1000 dt=0.001 > out.rsf
 	< receptor.rsf sfwigle > receptor.vpl
 	sfpen receptor.vpl
 
-Programador: Rodolfo A. C. Neves 12/06/2019
+Programmer: Rodolfo A. C. Neves (Dirack) 12/06/2019
 
 Email:  rodolfo_profissional@hotmail.com  
 
-Acesse conteúdo exclusivo e tire dúvidas no nosso site:
-	http://www.dirackslounge.online
+Site: https://dirack.github.io
 
-*/
-/*
-
-Licensa da Versão original (sfTestfd2d):
-
-	Copyright (C) 2013  Xi'an Jiaotong University (Pengliang Yang)
-
-Licensa versão modificada (sfdiffd2d):
-
-	Copyright (C) 2018 grupo de programação aplicada à geofísica (GPGEOF)
-	da Universidade Federal do Pará (UFPA); Belém, Pará, Brasil. 
-
-	Esse programa é um software livre; você pode redistribuir e/ou modificar
-	sobre os termos da licensa pública geral (LPG) publicada pela Free 
-	Software Foundation; na versão 2 da licensa, ou (a seu critério) qualquer
-	versão posterior.
-
-	Este programa é distribuído na esperança que será útil, mas SEM NENHUMA
-	GARANTIA; nem mesmo a garantia implícita de MERCANTILIDADE ou SERVENTIA
-	A UM PROPÒSITO DETERMINADO. veja a LPG licensa pública geral para mais
-	detalhes.
-
-	Você deve ter recebido uma cópia da LPG licensa pública geral junto com
-	este programa; se não, escreva para a Free Software Foundation, Inc., 
-	51 Franklin Street, Quinquagésimo andar, Boston, MA  02110-1301, USA.
 */
 
 #include <rsf.h>
@@ -178,6 +152,7 @@ int main(int argc, char* argv[])
 	float tmp;
 	float **v0;
 	float **r1; /* receptor */
+	bool border; /* Aplicar condição de borda */
 	sf_file Fv, Fw, r;
 	sf_axis eixot, eixox; /* eixo do tempo */
 
@@ -200,6 +175,7 @@ int main(int argc, char* argv[])
     	if (!sf_getfloat("fm",&fm)) fm=20.0; /* Frequência dominante do pulso Ricker */
    	if (!sf_getint("ft",&ft)) ft=0; /* Primeiro tempo de registro */
     	if (!sf_getint("jt",&jt)) jt=1;	/* Intervalo de tempo */
+	if (!sf_getbool("border",&border)) border=0;
 
 	sf_putint(Fw,"n1",nz);
 	sf_putint(Fw,"n2",nx);
@@ -271,7 +247,6 @@ int main(int argc, char* argv[])
 
 			for(ir=0;ir<nx;ir++){
 
-				//sf_warning("%i\n",nr-75+ir);
 				/* Registro no receptor r1 */
 				r1[ir][it]=v0[ir][35];
 
@@ -283,7 +258,9 @@ int main(int argc, char* argv[])
 
 		p1[sx][sz]+=wlt[it]; //Injeção da fonte
 		step_forward(p0, p1);
-		//apply_sponge(p0, p1);
+
+		/* Função para aplicar a borda */
+		if(border) apply_sponge(p0, p1);
 
 		ptr=p0; p0=p1; p1=ptr;
 
