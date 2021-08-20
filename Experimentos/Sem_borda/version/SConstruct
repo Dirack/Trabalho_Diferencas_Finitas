@@ -1,0 +1,56 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+#
+# Madagascar (Madagascar Script)
+#
+# Purpose: Exemplify border effect in FD modeling.
+#
+# Site: https://dirack.github.io
+# 
+# Version 1.0
+#
+# Programmer: Rodolfo A. C. Neves (Dirack) 10/05/2019
+#
+# email: rodolfo_profissional@hotmail.com
+
+from rsf.proj import *
+
+## Build velocity model
+Flow('vel',None,
+        '''
+        math output=2.0 n1=200 n2=200 d1=0.005 d2=0.005
+        label1=x1 unit1=km label2=x2 unit2=km
+        ''')
+
+# Receiver's position
+nr=25
+
+# FD modeling with border's condition
+Flow(['wav_with_border','receiver_with_border'],'vel',
+	'''
+	examplefd2d border=y nb=30 nt=1000 dt=0.001 rec=${TARGETS[1]}
+	''')
+
+Plot('wav_with_border','grey gainpanel=all title="Wavefield - WITH border\'s condition" scalebar=y color=j scalebar=y',view=1)
+
+Result('receiver_with_border',
+	'''
+	wiggle title="Shot gather - With border\'s condition" transp=y poly=y yreverse=y
+	''')
+
+## FD modeling without border's condition
+Flow(['wav_no_border','receiver_no_border'],'vel',
+	'''
+	examplefd2d border=n nb=30 nt=1000 dt=0.001 rec=${TARGETS[1]}
+	''')
+
+Plot('wav_no_border','grey gainpanel=all title="Wavefield - WITHOUT border\'s condition" scalebar=y color=j scalebar=y',view=1)
+
+Result('receiver_no_border',
+	'''
+	wiggle title="Shot gather - Without border\'s condition" transp=y poly=y yreverse=y
+	''')
+
+End()
+
+
